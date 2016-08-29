@@ -21,7 +21,9 @@ class SeedDump
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      record.attributes.merge!({"remote_data_url" => record.data.url}).select {|key| key.is_a?(String) }.each do |attribute, value|
+      attributes = record.attributes
+      attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
+      attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
         attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
       end
 
