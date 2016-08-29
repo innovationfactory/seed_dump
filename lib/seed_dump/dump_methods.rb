@@ -31,7 +31,11 @@ class SeedDump
     end
 
     def dump_attribute_new(attribute, value, options)
-      options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
+      if attribute == "data"
+        options[:import] ? value_to_s(value) : "remote_data_url: #{value_to_s(value.url)}"
+      else
+        options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
+      end
     end
 
     def value_to_s(value)
