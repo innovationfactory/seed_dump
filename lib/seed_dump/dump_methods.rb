@@ -22,7 +22,11 @@ class SeedDump
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+        if attribute == "data"
+          attribute_strings << dump_attribute_new("remote_data_url", value.url, options) unless options[:exclude].include?(attribute.to_sym)
+        else
+          attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+        end
       end
 
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
@@ -31,11 +35,7 @@ class SeedDump
     end
 
     def dump_attribute_new(attribute, value, options)
-      if attribute == "data"
-        options[:import] ? value_to_s(value) : "remote_data_url: #{value_to_s(value.url)}"
-      else
-        options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
-      end
+      options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
     end
 
     def value_to_s(value)
