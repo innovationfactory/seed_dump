@@ -88,7 +88,7 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      if model_for(records) == "User"
+      if model_for(records).to_s == "User"
         io.write("\n].each do |u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch('encrypted_password')) \n u.save \n end")
       else
         io.write("\n].each {|a| #{model_for(records)}.create(a)}\n")
