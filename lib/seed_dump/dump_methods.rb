@@ -71,7 +71,6 @@ class SeedDump
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
       method = options[:import] ? 'import' : 'create!'
-      io.write("#{model_for(records, true)} =")
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
       end
@@ -89,8 +88,11 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n]\n")
-      io.write("#{model_for(records, true)}.each {|a| #{model_for(records)}.create(a)}\n")
+      if model_for(records) == "User"
+        io.write("\n].each do |u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch('encrypted_password')) \n u.save \n end"
+      else
+        io.write("\n].each {|a| #{model_for(records)}.create(a)}\n")
+      end
 
       if options[:file].present?
         nil
