@@ -74,7 +74,7 @@ class SeedDump
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
       end
-      io.write("[\n  ")
+      io.write("##{model_for(records) data:}\n[ ")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -89,9 +89,9 @@ class SeedDump
       end
 
       if model_for(records).to_s == "User"
-        io.write("\n].each do |u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch('encrypted_password')) \n u.save \n end")
+        io.write("\n].each do |u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch('encrypted_password'))\nend\n\n")
       else
-        io.write("\n].each {|a| #{model_for(records)}.create(a)}\n")
+        io.write("\n].each {|a| #{model_for(records)}.create(a)}\n\n")
       end
 
       if options[:file].present?
