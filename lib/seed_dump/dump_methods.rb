@@ -21,11 +21,20 @@ class SeedDump
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      attributes = record.attributes
-      attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
-      attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+      if model_for(record) == "Settings"
+        attributes = record.get_all
+        attributes.each do |key, value|
+          attribute_strings << "#{key}: #{value}"
+        end
+      else
+        attributes = record.attributes
+        attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
+        attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
+          attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+        end
       end
+      
+
 
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
 
@@ -89,7 +98,9 @@ class SeedDump
       end
 
       if model_for(records).to_s == "User"
-        io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch('encrypted_password'))\n}\n\n")
+        io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
+      elsif model_for(records).to_s == "Settings"
+        io.write(".each {|k,v| Settings.create(var: k, value: v)")
       else
         io.write("\n].each {|a| #{model_for(records)}.create(a)}\n\n")
       end
