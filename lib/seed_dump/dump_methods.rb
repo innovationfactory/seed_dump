@@ -90,7 +90,7 @@ class SeedDump
       end
 
       io.write("\n]\n")
-      io.write("#{model_for(records).to_s.pluralize.downcase}.each {|a| #{model_for(records)}.create(a)}\n")
+      io.write("#{model_for(records, true)}.each {|a| #{model_for(records)}.create(a)}\n")
 
       if options[:file].present?
         nil
@@ -110,11 +110,12 @@ class SeedDump
       attribute_names.select {|name| !options[:exclude].include?(name.to_sym)}
     end
 
-    def model_for(records)
+    def model_for(records, var = false)
       if records.is_a?(Class)
         records
       elsif records.respond_to?(:model)
-        records.model
+        records.model unless var
+        records.model.to_s.pluralize.downcase
       else
         records[0].class
       end
