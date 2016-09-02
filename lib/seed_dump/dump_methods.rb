@@ -111,14 +111,15 @@ class SeedDump
     end
 
     def model_for(records, var = false)
-      if records.is_a?(Class)
-        records
-      elsif records.respond_to?(:model)
-        records.model unless var
-        records.model.to_s.pluralize.downcase
-      else
-        records[0].class
-      end
+      x = if records.is_a?(Class)
+          records
+        elsif records.respond_to?(:model)
+          records.model
+        else
+          records[0].class
+        end
+      return x unless var
+      return x.to_s.pluralize.downcase
     end
 
   end
