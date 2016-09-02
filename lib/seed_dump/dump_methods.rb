@@ -71,7 +71,7 @@ class SeedDump
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
       method = options[:import] ? 'import' : 'create!'
-      io.write("#{model_for(records, true)}.to_s.pluralize.downcase =")
+      io.write("#{model_for(records, true)} =")
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
       end
