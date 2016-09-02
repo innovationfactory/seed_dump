@@ -74,7 +74,7 @@ class SeedDump
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
       end
-      io.write("##{model_for(records) data:}\n[ ")
+      io.write("# #{model_for(records)} data:\n[ ")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
