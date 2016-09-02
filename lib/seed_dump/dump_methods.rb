@@ -90,7 +90,7 @@ class SeedDump
       end
 
       io.write("\n]\n")
-      io.write("#{model_for(records)}.to_s.pluralize.downcase.each {|a| #{model_for(records).create(a)}\n")
+      io.write("#{model_for(records).to_s.pluralize.downcase}.each {|a| #{model_for(records)}.create(a)\n")
 
       if options[:file].present?
         nil
