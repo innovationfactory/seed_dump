@@ -14,11 +14,7 @@ Installation
 
 Add it to your Gemfile with:
 ```ruby
-gem 'seed_dump'
-```
-Or install it by hand:
-```sh
-$ gem install seed_dump
+gem 'seed_dump', :github => 'iPet/seed_dump', :branch => 'master'
 ```
 Examples
 --------
@@ -31,14 +27,15 @@ Dump all data directly to `db/seeds.rb`:
 ```
 Result:
 ```ruby
-Product.create!([
+[
   { category_id: 1, description: "Long Sleeve Shirt", name: "Long Sleeve Shirt" },
   { category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt" }
-])
-User.create!([
+].each{|hash| Product.create(hash) }
+
+[
   { password: "123456", username: "test_1" },
   { password: "234567", username: "test_2" }
-])
+].each{|hash| User.create(hash)
 ```
 
 Dump only data from the users table and dump a maximum of 1 record:
@@ -48,9 +45,9 @@ $ rake db:seed:dump MODELS=User LIMIT=1
 
 Result:
 ```ruby
-User.create!([
+[
   { password: "123456", username: "test_1" }
-])
+].each{|hash| User.create(hash) }
 ```
 
 Append to `db/seeds.rb` instead of overwriting it:
@@ -75,10 +72,10 @@ There are more options that can be set— see below for all of them.
 Output a dump of all User records:
 ```ruby
 irb(main):001:0> puts SeedDump.dump(User)
-User.create!([
+[
   { password: "123456", username: "test_1" },
   { password: "234567", username: "test_2" }
-])
+].each{|hash| User.create(hash) }
 ```
 
 Write the dump to a file:
@@ -101,10 +98,10 @@ Options are specified as a Hash for the second argument.
 In the console, any relation of ActiveRecord rows can be dumped (not individual objects though)
 ```ruby
 irb(main):001:0> puts SeedDump.dump(User.where(is_admin: false))
-User.create!([
+[
   { password: "123456", username: "test_1", is_admin: false },
   { password: "234567", username: "test_2", is_admin: false }
-])
+].each{|hash| User.create(hash) }
 ```
 
 Options
