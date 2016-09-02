@@ -14,11 +14,7 @@ Installation
 
 Add it to your Gemfile with:
 ```ruby
-gem 'seed_dump'
-```
-Or install it by hand:
-```sh
-$ gem install seed_dump
+gem 'seed_dump', :github => 'iPet/seed_dump', :branch => 'master'
 ```
 Examples
 --------
@@ -31,14 +27,15 @@ Dump all data directly to `db/seeds.rb`:
 ```
 Result:
 ```ruby
-Product.create!([
+[
   { category_id: 1, description: "Long Sleeve Shirt", name: "Long Sleeve Shirt" },
   { category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt" }
-])
-User.create!([
+].each{|hash| Product.create(hash) }
+
+[
   { password: "123456", username: "test_1" },
   { password: "234567", username: "test_2" }
-])
+].each{|hash| User.create(hash)
 ```
 
 Dump only data from the users table and dump a maximum of 1 record:
