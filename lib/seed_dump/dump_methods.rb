@@ -21,7 +21,7 @@ class SeedDump
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      if model_for(record) == "Settings"
+      if record.class.to_s == "Settings"
         attributes = record.get_all
         attributes.each do |key, value|
           attribute_strings << "#{key}: #{value}"
@@ -100,7 +100,7 @@ class SeedDump
       if model_for(records).to_s == "User"
         io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
       elsif model_for(records).to_s == "Settings"
-        io.write(".each {|k,v| Settings.create(var: k, value: v)")
+        io.write(".each {|k,v| Settings.create(var: k, value: v)}\n\n")
       else
         io.write("\n].each {|a| #{model_for(records)}.create(a)}\n\n")
       end
