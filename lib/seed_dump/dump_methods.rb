@@ -98,6 +98,8 @@ class SeedDump
         io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
       elsif model_for(records).to_s == "Settings"
         io.write("\n].reduce({}, :merge).each {|k,v| Settings.create(var: k, value: v)}\n\n")
+      elsif ["Communication", "Permission", "Notification", "CriterionAnswer"].include?(model_for(records).to_s)
+        io.write("\n].each {|a| \nbegin\n  #{model_for(records)}.create(a)\n rescue\n nil\nend }\n\n")
       else
         io.write("\n].each {|a| #{model_for(records)}.create(a)}\n\n")
       end
