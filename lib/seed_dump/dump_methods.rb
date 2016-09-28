@@ -22,7 +22,14 @@ class SeedDump
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       if record.class.to_s == "Settings"
-        attribute_strings << (record.value.class == String ? "#{record.var}: '#{record.value}' ": "#{record.var}: #{record.value.map { |k, v| [k, "#{v}"] }.to_h}")
+        attribute_strings << 
+          if record.value.class == String 
+            "#{record.var}: '#{record.value}' "
+          elsif record.value.class == Hash 
+            "#{record.var}: #{record.value.map { |k, v| [k, "#{v}"] }.to_h}")
+          else
+            "#{record.var}: #{record.value}"
+          end
       else
         attributes = record.attributes
         attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
