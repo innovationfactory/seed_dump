@@ -26,7 +26,7 @@ class SeedDump
           if record.value.class == String 
             "#{record.var}: '#{record.value}' "
           elsif record.value.class == Hash 
-            "#{record.var}: #{record.value.map { |k, v| [k, '#{v}'] }.to_h}"
+            "#{record.var}: #{record.value.map { |k, v| [k, v.to_s] }.to_h}"
           else
             "#{record.var}: #{record.value}"
           end
