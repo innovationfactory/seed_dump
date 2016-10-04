@@ -22,7 +22,27 @@ class SeedDump
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       if record.class.to_s == "Settings"
-        attribute_strings << 
+        attribute_strings = append_strings(record)
+      else
+        attributes = setup_attributes(record.attributes)
+      end
+     
+      open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
+
+      "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
+    end
+    
+    def setup_attributes(attributes)
+        attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
+        attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
+          attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+        end	
+        attributes
+    end
+    
+    def append_strings(record)
+		result = []
+		result << 
           if record.value.class == String 
             "#{record.var}: '#{record.value}' "
           elsif record.value.class == Hash 
@@ -30,19 +50,7 @@ class SeedDump
           else
             "#{record.var}: #{record.value}"
           end
-      else
-        attributes = record.attributes
-        attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
-        attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-          attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
-        end
-      end
-      
-
-
-      open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
-
-      "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
+        result
     end
 
     def dump_attribute_new(attribute, value, options)
