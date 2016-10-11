@@ -18,34 +18,53 @@ class SeedDump
     def dump_record(record, options)
       attribute_strings = []
 
-      # We select only string attribute names to avoid conflict
-      # with the composite_primary_keys gem (it returns composite
-      # primary key attribute names as hashes).
-      if record.class.to_s == "Settings"
-        attribute_strings << 
-          if record.value.class == String 
-            "#{record.var}: '#{record.value}' "
-          elsif record.value.class == Hash 
-            "#{record.var}: #{record.value.map { |k, v| [k, v.to_s] }.to_h}"
-          else
-            "#{record.var}: #{record.value}"
+      begin
+        # We select only string attribute names to avoid conflict
+        # with the composite_primary_keys gem (it returns composite
+        # primary key attribute names as hashes).
+        if record.class.to_s == "Settings"
+          attribute_strings <<
+            if record.value.class == String
+              "#{record.var}: '#{record.value}' "
+            elsif record.value.class == Hash
+              "#{record.var}: #{record.value.map { |k, v| [k, v.to_s] }.to_h}"
+            else
+              "#{record.var}: #{record.value}"
+            end
+        else
+          attributes = record.attributes
+          if options[:model_options].present? && options[:model_options][:attributes].present?
+            attributes.keep_if {|k,_| options[:model_options][:attributes].include? k.to_sym}
           end
-      else
-        attributes = record.attributes
-        attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
-        attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-          attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+
+          if options[:model_options].present? && options[:model_options][:methods].present?
+            options[:model_options][:methods].each do |k,v|
+              attributes[k.to_s] = eval(v)
+            end
+          end
+
+          attributes.merge!({"remote_data_url" => record.data.url}) if attributes.has_key?("data")
+          attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
+            attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+          end
         end
+
+
+
+        open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
+
+        "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
+      rescue => e
+        raise "Error dumping #{record.to_s} with options #{options.to_json}: #{e.message}"
       end
-      
-
-
-      open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
-
-      "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
     end
 
     def dump_attribute_new(attribute, value, options)
+
+      if options[:model_options].present? && options[:model_options][:mappings].present? && options[:model_options][:mappings].has_key?(attribute.to_sym)
+        attribute = options[:model_options][:mappings][attribute.to_sym].to_s
+      end
+
       options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
     end
 
@@ -101,8 +120,10 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      if model_for(records).to_s == "User"
-        io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
+      if options[:model_options].present? && options[:model_options][:mapped_model_name].present?
+        io.write("\n].each {|a| #{options[:model_options][:mapped_model_name]}.create(a)}\n\n")
+      elsif model_for(records).to_s == "User"
+         io.write("\n].each {|u|\n randpass = SecureRandom.hex(10) \n user = User.new(u)\n user.password = randpass\n user.password_confirmation = randpass\n user.skip_confirmation!\n user.save }\n\n")
       elsif model_for(records).to_s == "Settings"
         io.write("\n].reduce({}, :merge).each {|k,v| Settings.create(var: k, value: v)}\n\n")
       elsif ["Communication", "Permission", "Notification", "CriterionAnswer"].include?(model_for(records).to_s)
