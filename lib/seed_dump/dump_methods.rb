@@ -26,7 +26,7 @@ class SeedDump
           if record.value.class == String 
             "#{record.var}: '#{record.value}' "
           elsif record.value.class == Hash 
-            "#{record.var}: #{record.value.map { |k, v| [k, v.to_s] }.to_h}"
+            "#{record.var}: #{record.value.map { |k, v| [k, (v.kind_of?(Array) ? v : v.to_s)] }.to_h}"
           else
             "#{record.var}: #{record.value}"
           end
@@ -107,6 +107,8 @@ class SeedDump
         io.write("\n].reduce({}, :merge).each {|k,v| Settings.create(var: k, value: v)}\n\n")
       elsif ["Communication", "Permission", "Notification", "CriterionAnswer"].include?(model_for(records).to_s)
         io.write("\n].each {|a| \nbegin\n  #{model_for(records)}.create(a)\n rescue\n nil\nend }\n\n")
+      elsif ["Mailboxer::Conversation", "Mailboxer::Notification", "Mailboxer::Receipt"].include?(model_for(records).to_s)
+        io.write("\n].each {|a| \n  #{model_for(records)}.new(a).save(validate: false) }\n\n")
       else
         io.write("\n].each {|a| #{model_for(records)}.create(a)}\n\n")
       end
