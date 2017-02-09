@@ -83,6 +83,10 @@ class SeedDump
     def write_records_to_io(records, io, options)
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
+      if model_for(records).to_s == "PublicActivity::Activity"
+        io.write("\nPublicActivity::Activity.unscoped.destroy_all\n\n")
+      end
+
       method = options[:import] ? 'import' : 'create!'
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
