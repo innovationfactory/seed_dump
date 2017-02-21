@@ -106,7 +106,7 @@ class SeedDump
       end
 
       if model_for(records).to_s == "User"
-        io.write("\n].each {|u|\n user = User.new(u)\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
+        io.write("\n].each {|u|\n user = User.new(u)\n user.skip_confirmation_notification!\n user.update_attribute(:encrypted_password, u.fetch(:encrypted_password))\n}\n\n")
       elsif model_for(records).to_s == "Settings"
         io.write("\n].reduce({}, :merge).each {|k,v| Settings.create(var: k, value: v)}\n\n")
       elsif ["Communication", "Permission", "Notification", "CriterionAnswer"].include?(model_for(records).to_s)
